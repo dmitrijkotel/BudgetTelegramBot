@@ -3,7 +3,8 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 import app.handlers.budget.keyboards.budget_menu_keyboard as kb
-import app.handlers
+from database.registration_db import registration
+import keyboards.registration_keyboard as reg_kb
 
 router_registration = Router()
 async def start_message(message):
@@ -28,7 +29,7 @@ async def start_message(message):
 
     📊 <i>Давайте сделаем ваши финансы более прозрачными и управляемыми вместе!</i>""", parse_mode=ParseMode.HTML)
 
-    await message.answer('Пожалуйста, пройдите регистрацию, чтобы открыть все его возможности!', reply_markup=kb.)
+    await message.answer('Пожалуйста, пройдите регистрацию, чтобы открыть все его возможности!', reply_markup=reg_kb.registration_keyboard)
 
 @router_registration.callback_query(F.data == 'reg')
 async def create_budget(callback: CallbackQuery):
