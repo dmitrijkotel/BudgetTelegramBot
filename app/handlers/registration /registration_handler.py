@@ -3,8 +3,8 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 import app.handlers.budget.keyboards.budget_menu_keyboard as kb
-import app.handlers.
-routerReg = Router()
+
+router_registration = Router()
 async def start_message(message):
     await message.answer("""
     🌟 <b>Добро пожаловать в Бюджетный Помощник!</b> 🌟
@@ -29,14 +29,14 @@ async def start_message(message):
 
     await message.answer('Пожалуйста, пройдите регистрацию, чтобы открыть все его возможности!', reply_markup=kb.)
 
-@routerReg.callback_query(F.data == 'reg')
+@router_registration.callback_query(F.data == 'reg')
 async def create_budget(callback: CallbackQuery):
     await callback.answer()
     await callback.message.delete()
     await callback.message.answer('Управление бюджетом', reply_markup=kb.budget_menu_keyboard)
 
 # Обработчик команды /start
-@routerReg.message(CommandStart())
+@router_registration.message(CommandStart())
 async def cmd_start(message: Message):
 
         telegram_id = message.from_user.id
