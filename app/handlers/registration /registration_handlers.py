@@ -1,10 +1,9 @@
-from aiogram import Router, types, F
+from aiogram import Router, F
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
-from app.database.registration import registration
-import app.keyboards.keyboardMain as kb
-
+import app.handlers.budget.keyboards.budget_menu_keyboard as kb
+import app.handlers.
 routerReg = Router()
 async def start_message(message):
     await message.answer("""
@@ -28,13 +27,13 @@ async def start_message(message):
 
     📊 <i>Давайте сделаем ваши финансы более прозрачными и управляемыми вместе!</i>""", parse_mode=ParseMode.HTML)
 
-    await message.answer('Пожалуйста, пройдите регистрацию, чтобы открыть все его возможности!', reply_markup=kb.registrationKeyboard)
+    await message.answer('Пожалуйста, пройдите регистрацию, чтобы открыть все его возможности!', reply_markup=kb.)
 
 @routerReg.callback_query(F.data == 'reg')
 async def create_budget(callback: CallbackQuery):
     await callback.answer()
     await callback.message.delete()
-    await callback.message.answer('Управление бюджетом', reply_markup=kb.mainKeyboard)
+    await callback.message.answer('Управление бюджетом', reply_markup=kb.budget_menu_keyboard)
 
 # Обработчик команды /start
 @routerReg.message(CommandStart())
@@ -45,4 +44,4 @@ async def cmd_start(message: Message):
         if result == 0:
             await start_message(message)
         else:
-            await message.answer('Управление бюджетом', reply_markup=kb.mainKeyboard)
+            await message.answer('Управление бюджетом', reply_markup=kb.budget_menu_keyboard)

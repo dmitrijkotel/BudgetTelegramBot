@@ -1,6 +1,6 @@
 import sqlite3
 
-def createTables():
+def create_tables_db():
     # Подключаемся к базе данных (или создаем ее, если она не существует)
     db = sqlite3.connect('tgBotDb.db')
     cursor = db.cursor()

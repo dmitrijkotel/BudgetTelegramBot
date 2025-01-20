@@ -1,6 +1,6 @@
 import sqlite3
 import aiosqlite
-import app.keyboards.keyboardBudget as kb
+import app.handlers.main.keyboards.menu_keyboard as kb
 
 async def set_new_budget_description(message, new_description, budget_id):
     async with aiosqlite.connect('tgBotDb.db') as db:

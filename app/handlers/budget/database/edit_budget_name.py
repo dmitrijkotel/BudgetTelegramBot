@@ -1,5 +1,5 @@
 import sqlite3
-import app.keyboards.keyboardBudget as kb
+import app.handlers.main.keyboards.menu_keyboard as kb
 
 async def set_new_budget_name(message, new_name, budget_id):
     conn = sqlite3.connect('tgBotDb.db')

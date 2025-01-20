@@ -1,6 +1,6 @@
 import sqlite3
 import aiosqlite
-import app.keyboards.keyboardBudget as kb
+import app.handlers.main.keyboards.menu_keyboard as kb
 
 
 async def get_budget_details(budget_id):
