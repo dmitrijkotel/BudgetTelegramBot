@@ -1,10 +1,10 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import app.handlers.main.keyboards.menu_keyboard as kb
+from app.handlers.budget.keyboards.actions_budget_keyboard import actions_budget_keyboard as kb_act
 from aiogram.fsm.state import State, StatesGroup
 
-from app.handlers.budget.database.actionsBudget import get_budget_details
+from app.handlers.budget.database.actionsBudget import get_budget_details_db
 from app.handlers.budget.database.viewBudget import view_budget
 from app.handlers.budget.edit_budget_directory.actions_budget_functions import delete_budget_function, edit_budget_function
 from app.handlers.budget.edit_budget_directory.edit_budget_functions import edit_name_budget_function, \
@@ -15,8 +15,8 @@ class edit_budget_states(StatesGroup):
     waiting_for_new_name = State()
     waiting_for_budget_new_description = State()
 
-@view_budget_router.callback_query(F.data == 'view_budget')
-async def view_budget_router(callback: CallbackQuery):
+@view_budget_router.callback_query(F.data == 'view_budget_button')
+async def view_budget_handler(callback: CallbackQuery):
     telegram_id = callback.from_user.id
     await callback.message.delete()
     await view_budget(callback.message, telegram_id)  # Предполагается, что эта функция получает все бюджеты для конкретного пользователя
@@ -30,7 +30,7 @@ async def handle_budget_selection(callback: CallbackQuery):
     global budget_id  # Используем глобальную переменную
     budget_id = int(callback.data)  # Присваиваем значение
 
-    budget_details = await get_budget_details(budget_id)  # Функция, которую нужно реализовать
+    budget_details = await get_budget_details_db(budget_id)  # Функция, которую нужно реализовать
     if budget_details:
         budget_name, description = budget_details
         response_message = f"{budget_name}\nОписание: {description}" if description else f"{budget_name}\n"
@@ -39,7 +39,7 @@ async def handle_budget_selection(callback: CallbackQuery):
 
     await callback.message.delete()
     await callback.answer()  # Оповещение об успешном нажатии на кнопку
-    await callback.message.answer(response_message, reply_markup=kb.actionsBudget)  # Отправляем сообщение с деталями бюджета
+    await callback.message.answer(response_message, reply_markup=kb_act)  # Отправляем сообщение с деталями бюджета
 
 @view_budget_router.callback_query(F.data == 'delete_budget_button')
 async def delete_budget_handler(callback: CallbackQuery):

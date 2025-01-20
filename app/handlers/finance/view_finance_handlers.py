@@ -16,7 +16,7 @@ async def edit_budget_handler(callback: CallbackQuery):
 async def view_budget_router(callback: CallbackQuery):
     telegram_id = callback.from_user.id
     await callback.message.delete()
-    await callback.message.answer('Выберите категорию расхода:', reply_markup=kb_main.cancelKeyboard)
+    await callback.message.answer('Выберите категорию расхода:', reply_markup=kb_main.cancel_keyboard)
     await callback.answer()
 
 
@@ -24,5 +24,5 @@ async def view_budget_router(callback: CallbackQuery):
 async def view_budget_router(callback: CallbackQuery):
     telegram_id = callback.from_user.id
     await callback.message.delete()
-    await callback.message.answer('Выберите категорию дохода:', reply_markup=kb_main.cancelKeyboard)
+    await callback.message.answer('Выберите категорию дохода:', reply_markup=kb_main.cancel_keyboard)
     await callback.answer()

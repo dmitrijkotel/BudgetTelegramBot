@@ -7,4 +7,4 @@ async def set_new_budget_name(message, new_name, budget_id):
     cursor.execute("UPDATE budgets SET budget_name = ? WHERE id = ?", (new_name, budget_id))
     conn.commit()
     conn.close()
-    await message.answer('Название бюджета успешно изменено!', reply_markup=kb.backKeyboard)
+    await message.answer('Название бюджета успешно изменено!', reply_markup=kb.back_keyboard)

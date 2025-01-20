@@ -1,6 +1,6 @@
 import sqlite3
 
-def addBudget(user_id, budget_name, description):
+def add_budget_db(user_id, budget_name, description):
     db = sqlite3.connect('tgBotDb.db')
     cursor = db.cursor()
 

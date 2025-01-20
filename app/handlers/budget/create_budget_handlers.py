@@ -1,10 +1,11 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import app.handlers.main.keyboards.menu_keyboard as kb
-import app.handlers.budget.keyboards.budget_menu_keyboard as kbMain
+import app.handlers.main.keyboards.menu_keyboard as kb_menu
+import app.handlers.budget.keyboards.budget_menu_keyboard as kb_main
+import app.handlers.budget.keyboards.add_budget_description_keyboard as kb_desc
 from aiogram.fsm.state import State, StatesGroup
-from app.handlers.budget.database.addBudget import addBudget
+from app.handlers.budget.database.add_budget import add_budget_db
 
 create_budget_router = Router()
 
@@ -16,7 +17,7 @@ class create_budget_states(StatesGroup):
 async def create_budget_handler(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     # Отправляем сообщение с просьбой ввести название бюджета и сохраняем идентификатор
-    bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb.cancelKeyboard)
+    bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb_menu.cancel_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
     await state.set_state(create_budget_states.waiting_for_budget_title)
     await callback.answer()
@@ -32,7 +33,7 @@ async def create_budget_name(message: Message, state: FSMContext):
     bot_message_id = user_data.get('bot_message_id')
     await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_message_id)
 
-    bot_message = await message.answer("Введите описание бюджета :", reply_markup=kb.addBudgetDescriptionKeyboard)
+    bot_message = await message.answer("Введите описание бюджета :", reply_markup=kb_desc.add_budget_description_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
     await state.set_state(create_budget_states.waiting_for_budget_description)
 
@@ -43,7 +44,7 @@ async def create_budget_description(message: Message, state: FSMContext):
 
     if user_data.get('description') == '':
         # Если описание уже пустое (т.е. Нажата кнопка "Skip")
-        await message.answer("Описание бюджета пропущено.", reply_markup=kbMain.mainKeyboard)
+        await message.answer("Описание бюджета пропущено.", reply_markup=kb_main.budget_menu_keyboard)
     else:
         # Обработка введенного описания
         description = message.text
@@ -56,9 +57,9 @@ async def create_budget_description(message: Message, state: FSMContext):
 
         budget_name = user_data.get('budget_name')  # Получаем название бюджета
         telegram_id = message.from_user.id
-        result = addBudget(telegram_id, budget_name, description)
+        result = add_budget_db(telegram_id, budget_name, description)
 
-        await message.answer(result, reply_markup=kbMain.mainKeyboard)
+        await message.answer(result, reply_markup=kb_main.budget_menu_keyboard)
     await state.clear()  # Очистка состояния после успешного создания бюджета
 
 @create_budget_router.callback_query(F.data == 'skip_budget_description_button')
@@ -76,7 +77,7 @@ async def skip_button(callback: CallbackQuery, state: FSMContext):
 
     # Здесь добавляем логику добавления бюджета в базу данных
     telegram_id = callback.from_user.id
-    result = addBudget(telegram_id, budget_name, description)
+    result = add_budget_db(telegram_id, budget_name, description)
 
-    await callback.message.answer(result, reply_markup=kbMain.mainKeyboard)
+    await callback.message.answer(result, reply_markup=kb_main.budget_menu_keyboard)
     await state.clear()  # Очистка состояния после успешного создания бюджета

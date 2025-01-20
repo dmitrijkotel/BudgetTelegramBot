@@ -1,6 +1,6 @@
 from aiogram.types import CallbackQuery
-import app.handlers.main.keyboards.menu_keyboard as kb
-from app.handlers.budget.database.actionsBudget import delete_budget
+import app.handlers.budget.keyboards.edit_budget_keyboard as kb
+from app.handlers.budget.database.actionsBudget import delete_budget_db
 
 async def delete_budget_function(callback: CallbackQuery, budget_id):
     if budget_id is None:
@@ -11,7 +11,7 @@ async def delete_budget_function(callback: CallbackQuery, budget_id):
     await callback.answer()
 
     # Удаляем бюджет по ID
-    await delete_budget(budget_id, callback.message)  # Теперь передаем бюджет_id
+    await delete_budget_db(budget_id, callback.message)  # Теперь передаем бюджет_id
     budget_id = None  # Сбрасываем budget_id после операции
 
 
