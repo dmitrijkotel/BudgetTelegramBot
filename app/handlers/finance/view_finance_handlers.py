@@ -1,6 +1,7 @@
+from unicodedata import category
+
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-import app.handlers.main.keyboards.menu_keyboard as kb_main
 import app.handlers.finance.keyboards.finance_budget_keyboard as kb
 
 finance_budget_router = Router()
@@ -16,7 +17,7 @@ async def edit_budget_handler(callback: CallbackQuery):
 async def view_budget_router(callback: CallbackQuery):
     telegram_id = callback.from_user.id
     await callback.message.delete()
-    await callback.message.answer('Выберите категорию расхода:', reply_markup=kb_main.cancel_keyboard)
+    await callback.message.answer('Выберите категорию расхода:', reply_markup=kb.view_expense_categories_keyboard)
     await callback.answer()
 
 
@@ -24,5 +25,5 @@ async def view_budget_router(callback: CallbackQuery):
 async def view_budget_router(callback: CallbackQuery):
     telegram_id = callback.from_user.id
     await callback.message.delete()
-    await callback.message.answer('Выберите категорию дохода:', reply_markup=kb_main.cancel_keyboard)
+    await callback.message.answer('Выберите категорию дохода:', reply_markup=kb.view_income_categories_keyboard)
     await callback.answer()

@@ -18,17 +18,20 @@ def create_tables_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
         user_id INTEGER NOT NULL,  
         budget_name TEXT NOT NULL,  
-        description TEXT ,
+        description TEXT,  
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE  
     );  
     """)
 
-    # Создание таблицы категорий
+    # Создание таблицы категорий с привязкой к user_id
     cursor.execute("""  
     CREATE TABLE IF NOT EXISTS categories (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
-        name TEXT NOT NULL UNIQUE  
+        user_id INTEGER NOT NULL,
+        name TEXT NOT NULL UNIQUE,  
+        type TEXT NOT NULL CHECK (type IN ('income', 'expense')),  
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE  -- Ограничение для связи с таблицей пользователей  
     );  
     """)
 
@@ -37,13 +40,13 @@ def create_tables_db():
     CREATE TABLE IF NOT EXISTS expenses (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
         budget_id INTEGER NOT NULL,  
-        category_id INTEGER NOT NULL,  -- Внешний ключ для категории
+        category_id INTEGER NOT NULL,
         amount REAL NOT NULL,  
         date TEXT NOT NULL,  
         description TEXT,  
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-        FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE,  -- Каскадное удаление при удалении бюджета
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE  -- Связь с таблицей категорий
+        FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE,  -- Каскадное удаление при удалении бюджета  
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE  -- Связь с таблицей категорий  
     );  
     """)
 
@@ -52,13 +55,13 @@ def create_tables_db():
     CREATE TABLE IF NOT EXISTS income (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
         budget_id INTEGER NOT NULL,  
-        category_id INTEGER NOT NULL,  -- Внешний ключ для категории
+        category_id INTEGER NOT NULL,
         amount REAL NOT NULL,  
         date TEXT NOT NULL,  
         description TEXT,  
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-        FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE,  -- Каскадное удаление при удалении бюджета
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE  -- Связь с таблицей категорий
+        FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE,  -- Каскадное удаление при удалении бюджета  
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE  -- Связь с таблицей категорий  
     );  
     """)
 

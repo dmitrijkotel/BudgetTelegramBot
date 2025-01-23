@@ -19,3 +19,4 @@ async def edit_budget_function(callback: CallbackQuery):
     await callback.message.delete()
     await callback.answer()
     await callback.message.answer('Что желаете изменить?', reply_markup=kb.edit_budget_keyboard)  # Отправляем сообщение с деталями бюджета
+

@@ -17,7 +17,7 @@ class create_budget_states(StatesGroup):
 async def create_budget_handler(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     # Отправляем сообщение с просьбой ввести название бюджета и сохраняем идентификатор
-    bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb_menu.cancel_keyboard)
+    bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb_menu.back_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
     await state.set_state(create_budget_states.waiting_for_budget_title)
     await callback.answer()

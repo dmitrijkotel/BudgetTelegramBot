@@ -1,13 +1,13 @@
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import app.handlers.main.keyboards.menu_keyboard as kb
+import app.handlers.budget.edit_budget_directory.edit_budet_directory.edit_budget_keyboards as kb
 from app.handlers.budget.database.edit_budget_description import set_new_budget_description
 from app.handlers.budget.database.edit_budget_name import set_new_budget_name
 
 async def edit_name_budget_function(callback: CallbackQuery, state: FSMContext, edit_budget_states):
         await callback.message.delete()
         # Отправляем сообщение с просьбой ввести название бюджета и сохраняем идентификатор
-        bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb.cancel_keyboard)
+        bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb.back_edit_name_budget_keyboard)
         await state.update_data(bot_message_id=bot_message.message_id)
         await state.set_state(edit_budget_states.waiting_for_new_name)
         await callback.answer()
@@ -27,7 +27,7 @@ async def edit_description_budget_function(callback: CallbackQuery, state: FSMCo
     await callback.message.delete()
 
     # Отправляем сообщение и сохраняем идентификатор сообщения
-    bot_message = await callback.message.answer("Введите описание для бюджета:", reply_markup=kb.cancel_keyboard)
+    bot_message = await callback.message.answer("Введите описание для бюджета:", reply_markup=kb.back_complete_edit_name_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
 
     # Проверяем, что budget_id был установлен ранее
@@ -53,4 +53,4 @@ async def process_edit_budget_description_function(message: Message, state: FSMC
         await set_new_budget_description(message, budget_description, budget_id)
     else:
         await message.answer("Не удалось получить идентификатор бюджета. Обновление невозможно.",
-                             reply_markup=kb.back_keyboard)
+                             reply_markup=kb.back_complete_edit_description_keyboard)

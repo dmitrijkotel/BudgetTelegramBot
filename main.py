@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 
 from app.handlers.budget.create_budget_handlers import create_budget_router
+from app.handlers.budget.edit_budget_directory.action_budget_directory.actions_budget_keyboards import router_actions_budget_keyboard
 from app.handlers.budget.edit_budget_directory.view_budget_handlers import view_budget_router
 from app.handlers.finance.view_finance_handlers import finance_budget_router
 from app.handlers.main.menu_handler import router_menu_handler
@@ -18,6 +19,7 @@ async def main():
     dp.include_router(router_menu_handler)
     dp.include_router(create_budget_router)
     dp.include_router(view_budget_router)
+    dp.include_router(router_actions_budget_keyboard)
     dp.include_router(finance_budget_router)
     dp.include_router(registration_router)
 

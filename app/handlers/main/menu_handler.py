@@ -1,7 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 import app.handlers.budget.keyboards.budget_menu_keyboard as kb_budget
-from aiogram.fsm.state import State, StatesGroup
 
 router_menu_handler = Router()
 

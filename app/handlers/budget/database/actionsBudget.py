@@ -1,6 +1,6 @@
 import sqlite3
 import aiosqlite
-import app.handlers.main.keyboards.menu_keyboard as kb
+import app.handlers.budget.edit_budget_directory.action_budget_directory.actions_budget_keyboards as kb
 
 async def get_budget_details_db(budget_id):
     async with aiosqlite.connect('tgBotDb.db') as db:
@@ -16,15 +16,15 @@ async def delete_budget_db(budget_id, message):
             async with db.execute("SELECT id FROM budgets WHERE id = ?", (budget_id,)) as cursor:
                 budget_exists = await cursor.fetchone()
                 if not budget_exists:
-                    await message.answer("Бюджет не найден!", reply_markup=kb.back_keyboard)
+                    await message.answer("Бюджет не найден!", reply_markup=kb.back_complete_keyboard)
                     return
 
                     # Удаление бюджета
             async with db.execute("DELETE FROM budgets WHERE id = ?", (budget_id,)) as cursor:
                 await db.commit()
                 await message.answer('Бюджет успешно удалён!',
-                                     reply_markup=kb.back_keyboard)  # Сообщение об успешном удалении
+                                     reply_markup=kb.back_complete_keyboard)  # Сообщение об успешном удалении
 
         except (sqlite3.Error, aiosqlite.Error) as e:  # Ловим ошибки базы данных
             print(f"Ошибка базы данных: {e}")  # Выводим ошибку в консоль
-            await message.answer('Произошла ошибка, попробуйте снова!', reply_markup=kb.back_keyboard)
+            await message.answer('Произошла ошибка, попробуйте снова!', reply_markup=kb.back_complete_keyboard)

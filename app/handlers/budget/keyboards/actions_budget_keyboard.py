@@ -7,5 +7,5 @@ actions_budget_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     InlineKeyboardButton(text='Изменить', callback_data='edit_budget_button')],
 
     [InlineKeyboardButton(text='Oтчёт', callback_data='report_budget_button')],
-    [InlineKeyboardButton(text='Отмена', callback_data='cancel_button')],
+    [InlineKeyboardButton(text='Назад', callback_data='back_menu_budget_button')],
 ])
