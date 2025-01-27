@@ -1,0 +1,76 @@
+from aiogram import Router, F
+from aiogram.types import CallbackQuery
+
+from app.handlers.budget.database.viewBudget import get_budgets_from_db, create_keyboard
+import app.handlers.budget.edit_budget_directory.action_budget_directory.actions_budget_keyboards as actions_kb
+
+add_income_categories_router = Router()
+
+import aiosqlite
+from aiogram import types
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+async def get_income_categories_from_db(budget_id):
+    async with aiosqlite.connect('tgBotDb.db') as conn:
+        async with conn.execute(
+            "SELECT id, name FROM categories WHERE budget_id = ? AND type = ?",
+            (budget_id, 'income')
+        ) as cursor:
+            buttons = await cursor.fetchall()  # Получаем список с id и name
+    return buttons  # Возвращаем полученные данные
+
+async def create_income_categories_keyboard(categories):
+    keyboard = InlineKeyboardBuilder()
+
+    # Создаем кнопки для каждой категории
+    for category_id, category_name in categories:
+        button = InlineKeyboardButton(text=category_name, callback_data=f"category_{category_id}")
+        keyboard.add(button)
+
+    # Если количество категорий четное, мы можем добавить их по 2 в ряд, иначе по 1
+    if len(categories) % 2 == 0:
+        keyboard.adjust(2)  # 2 кнопки в ряд
+    else:
+        keyboard.adjust(1)  # 1 кнопка в ряд
+
+    # Добавить кнопки "Добавить категорию" и "Назад" в новую строку
+    keyboard.row(
+        InlineKeyboardButton(text="Добавить категорию", callback_data="add_income_category_button"),
+        InlineKeyboardButton(text="Назад", callback_data="back_income_categories_button")
+    )
+
+    # Возвращаем клавиатуру
+    return keyboard.as_markup()
+
+# Пример функции для отображения категорий доходов
+async def view_income_categories(message: types.Message, budget_id):
+    categories = await get_income_categories_from_db(budget_id)  # Получаем категории доходов из базы данных
+
+    # Создаем клавиатуру с категориями и кнопками "Добавить категорию" и "Назад"
+    keyboard = await create_income_categories_keyboard(categories)
+
+    # Если нет доступных категорий, выводим соответствующее сообщение
+    if not categories:
+        await message.answer("Нет доступных категорий доходов.", reply_markup=keyboard)
+    else:
+        await message.answer("Выберите категорию дохода:", reply_markup=keyboard)  # Отправляем сообщение с клавиатурой
+
+async def menu_budgets(callback):
+    telegram_id = callback.from_user.id
+
+    await callback.answer()
+    await callback.message.delete()
+
+    budgets = await get_budgets_from_db(telegram_id)
+
+    if not budgets:
+        return await callback.message.answer("Нет доступных бюджетов.", reply_markup=actions_kb.back_menu)
+
+    keyboard = await create_keyboard(budgets)
+
+    await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
+
+@add_income_categories_router.callback_query(F.data == 'back_income_categories_button')
+async def back_button_handler(callback: CallbackQuery):
+    await menu_budgets(callback)

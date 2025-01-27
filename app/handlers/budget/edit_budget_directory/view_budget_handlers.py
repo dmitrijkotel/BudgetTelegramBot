@@ -28,6 +28,7 @@ async def menu_budgets(callback):
 
     await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
 
+
 class edit_budget_states(StatesGroup):
     waiting_for_new_name = State()
     waiting_for_budget_new_description = State()
@@ -43,20 +44,32 @@ async def view_budget_handler(callback: CallbackQuery):
 budget_id = None
 
 @view_budget_router.callback_query(lambda call: call.data.isdigit())
-async def handle_budget_selection(callback: CallbackQuery):
-    global budget_id  # Используем глобальную переменную
-    budget_id = int(callback.data)  # Присваиваем значение
+async def handle_budget_selection(callback: CallbackQuery, state: FSMContext):
+    try:
+        await callback.message.delete()  # Удаляем предыдущее сообщение
+        await callback.answer()  # Оповещение об успешном нажатии на кнопку
 
-    budget_details = await get_budget_details_db(budget_id)  # Функция, которую нужно реализовать
-    if budget_details:
-        budget_name, description = budget_details
-        response_message = f"{budget_name}\nОписание: {description}" if description else f"{budget_name}\n"
-    else:
-        response_message = "Бюджет не найден."
+        global budget_id  # Используем глобальную переменную
+        budget_id = int(callback.data)
+        await state.update_data(budget_id=budget_id)
 
-    await callback.message.delete()
-    await callback.answer()  # Оповещение об успешном нажатии на кнопку
-    await callback.message.answer(response_message, reply_markup=kb_act)  # Отправляем сообщение с деталями бюджета
+        # Получаем детали бюджета
+        budget_details = await get_budget_details_db(budget_id)
+        if budget_details:
+            budget_name, description = budget_details
+            response_message = f"{budget_name}\nОписание: {description}" if description else f"{budget_name}\n"
+        else:
+            response_message = "Бюджет не найден."
+
+        # Отправляем сообщение с деталями бюджета
+        await callback.message.answer(response_message, reply_markup=kb_act)
+    except Exception as e:
+        # Обработка ошибок, если выходит за рамки общего
+        await callback.answer("Произошла ошибка. Попробуйте позже.")
+        print(f"Ошибка при обработке запроса: {e}")
+    print(
+        f" budget_id: {budget_id}")
+
 
 @view_budget_router.callback_query(F.data == 'delete_budget_button')
 async def delete_budget_handler(callback: CallbackQuery):
@@ -76,7 +89,6 @@ async def delete_budget_handler(callback: CallbackQuery):
 @view_budget_router.callback_query(F.data == 'back_menu_budget_button')
 async def delete_budget_handler(callback: CallbackQuery):
     await menu_budgets(callback)
-
 
 @view_budget_router.callback_query(F.data == 'edit_budget_button')
 async def edit_budget_handler(callback: CallbackQuery):
