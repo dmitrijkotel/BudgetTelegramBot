@@ -118,21 +118,3 @@ async def create_income_category_description(message: Message, state: FSMContext
     result = add_income_category_db(budget_id, category_name, description)
     await message.answer(result, reply_markup=kb_back)
     await state.clear()  # Очистка состояния после успешного создания категории
-
-
-@create_income_category_router.callback_query(F.data == 'income_budget_button')
-async def view_income_categories_handler(callback: CallbackQuery, state: FSMContext):
-    print("Проверка категорий бюджета")  # Отладка
-    global budget_id_g
-
-    user_data = await state.get_data()
-    budget_id = user_data.get('budget_id')
-
-    if budget_id is None:
-        budget_id = budget_id_g
-        if budget_id is None:
-            await callback.answer("Ошибка: идентификатор бюджета не найден.")
-            return
-
-    await callback.message.delete()
-    await view_income_categories(callback.message, budget_id)
