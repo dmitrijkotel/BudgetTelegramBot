@@ -25,11 +25,7 @@ async def create_income_categories_keyboard(categories):
     for category_id, category_name in categories:
         button = InlineKeyboardButton(text=category_name, callback_data=f"category_{category_id}")
         keyboard.add(button)
-
-    # Если количество категорий четное, мы можем добавить их по 2 в ряд, иначе по 1
-    if len(categories) % 2 == 0:
-        keyboard.adjust(2)  # 2 кнопки в ряд
-    else:
+        
         keyboard.adjust(1)  # 1 кнопка в ряд
 
     # Добавить кнопки "Добавить категорию" и "Назад" в новую строку
@@ -50,10 +46,10 @@ async def view_income_categories(message: Message, budget_id: int):
     else:
         await message.answer("Выберите категорию дохода:", reply_markup=keyboard)
 
-async def menu_budgets(callback: CallbackQuery):
+async def menu_budgets(callback):
     telegram_id = callback.from_user.id
+
     await callback.answer()
-    await callback.message.delete()
 
     budgets = await get_budgets_from_db(telegram_id)
 
@@ -61,7 +57,8 @@ async def menu_budgets(callback: CallbackQuery):
         return await callback.message.answer("Нет доступных бюджетов.", reply_markup=actions_kb.back_menu)
 
     keyboard = await create_keyboard(budgets)
-    await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
+
+    await callback.message.edit_text("Выберите бюджет:", reply_markup=keyboard)
 
 @view_income_category_router.callback_query(F.data == 'back_income_categories_button')
 async def back_button_handler(callback: CallbackQuery):

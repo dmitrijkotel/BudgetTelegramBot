@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.callback_answer import CallbackAnswer
 
 import app.handlers.budget.keyboards.budget_menu_keyboard as kb_budget
-from app.handlers.budget.database.viewBudget import view_budget, get_budgets_from_db, create_keyboard
+from app.handlers.budget.database.viewBudget import get_budgets_from_db, create_keyboard
 
 cancel_sure_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Да', callback_data='yes_button')],

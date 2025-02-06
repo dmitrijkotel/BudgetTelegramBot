@@ -16,15 +16,15 @@ async def delete_budget_db(budget_id, message):
             async with db.execute("SELECT id FROM budgets WHERE id = ?", (budget_id,)) as cursor:
                 budget_exists = await cursor.fetchone()
                 if not budget_exists:
-                    await message.answer("Бюджет не найден!", reply_markup=kb.back_complete_keyboard)
+                    await message.edit_text("Бюджет не найден!", reply_markup=kb.back_complete_keyboard)
                     return
 
                     # Удаление бюджета
             async with db.execute("DELETE FROM budgets WHERE id = ?", (budget_id,)) as cursor:
                 await db.commit()
-                await message.answer('Бюджет успешно удалён!',
+                await message.edit_text('Бюджет успешно удалён!',
                                      reply_markup=kb.back_complete_keyboard)  # Сообщение об успешном удалении
 
         except (sqlite3.Error, aiosqlite.Error) as e:  # Ловим ошибки базы данных
             print(f"Ошибка базы данных: {e}")  # Выводим ошибку в консоль
-            await message.answer('Произошла ошибка, попробуйте снова!', reply_markup=kb.back_complete_keyboard)
+            await message.edit_text('Произошла ошибка, попробуйте снова!', reply_markup=kb.back_complete_keyboard)

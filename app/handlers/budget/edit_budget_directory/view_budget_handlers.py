@@ -5,7 +5,7 @@ from app.handlers.budget.keyboards.actions_budget_keyboard import actions_budget
 from aiogram.fsm.state import State, StatesGroup
 
 from app.handlers.budget.database.actionsBudget import get_budget_details_db
-from app.handlers.budget.database.viewBudget import view_budget, create_keyboard, get_budgets_from_db
+from app.handlers.budget.database.viewBudget import create_keyboard, get_budgets_from_db
 from app.handlers.budget.edit_budget_directory.action_budget_directory.actions_budget_functions import delete_budget_function, edit_budget_function
 from app.handlers.budget.edit_budget_directory.edit_budet_directory.edit_budget_functions import edit_name_budget_function, \
     edit_description_budget_function, process_edit_budget_description_function, process_edit_budget_name_function
@@ -17,16 +17,15 @@ async def menu_budgets(callback):
     telegram_id = callback.from_user.id
 
     await callback.answer()
-    await callback.message.delete()
 
     budgets = await get_budgets_from_db(telegram_id)
 
     if not budgets:
-        return await callback.message.answer("Нет доступных бюджетов.", reply_markup=actions_kb.back_menu)
+        return await callback.message.edit_text("Нет доступных бюджетов.", reply_markup=actions_kb.back_menu)
 
     keyboard = await create_keyboard(budgets)
 
-    await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
+    await callback.message.edit_text("Выберите бюджет:", reply_markup=keyboard)
 
 
 class edit_budget_states(StatesGroup):
@@ -36,8 +35,7 @@ class edit_budget_states(StatesGroup):
 @view_budget_router.callback_query(F.data == 'view_budget_button')
 async def view_budget_handler(callback: CallbackQuery):
     telegram_id = callback.from_user.id
-    await callback.message.delete()
-    await view_budget(callback.message, telegram_id)  # Предполагается, что эта функция получает все бюджеты для конкретного пользователя
+    await menu_budgets(callback)  # Предполагается, что эта функция получает все бюджеты для конкретного пользователя
     await callback.answer()
 
 # Глобальная переменная budget_id
@@ -46,7 +44,6 @@ budget_id = None
 @view_budget_router.callback_query(lambda call: call.data.isdigit())
 async def handle_budget_selection(callback: CallbackQuery, state: FSMContext):
     try:
-        await callback.message.delete()  # Удаляем предыдущее сообщение
         await callback.answer()  # Оповещение об успешном нажатии на кнопку
 
         global budget_id  # Используем глобальную переменную
@@ -62,7 +59,7 @@ async def handle_budget_selection(callback: CallbackQuery, state: FSMContext):
             response_message = "Бюджет не найден."
 
         # Отправляем сообщение с деталями бюджета
-        await callback.message.answer(response_message, reply_markup=kb_act)
+        await callback.message.edit_text(response_message, reply_markup=kb_act)
     except Exception as e:
         # Обработка ошибок, если выходит за рамки общего
         await callback.answer("Произошла ошибка. Попробуйте позже.")
@@ -73,9 +70,9 @@ async def handle_budget_selection(callback: CallbackQuery, state: FSMContext):
 
 @view_budget_router.callback_query(F.data == 'delete_budget_button')
 async def delete_budget_handler(callback: CallbackQuery):
-    await callback.message.delete()
+    
     await callback.answer()
-    await callback.message.answer('Вы уверены, что хотите удалить этот бюджет?', reply_markup=actions_kb.cancel_sure_keyboard)
+    await callback.message.edit_text('Вы уверены, что хотите удалить этот бюджет?', reply_markup=actions_kb.cancel_sure_keyboard)
 
 @view_budget_router.callback_query(F.data == 'yes_button')
 async def delete_budget_handler(callback: CallbackQuery):

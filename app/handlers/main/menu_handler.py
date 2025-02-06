@@ -7,11 +7,9 @@ router_menu_handler = Router()
 @router_menu_handler.callback_query(F.data == 'cancel_button')
 async def create_budget(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.delete()
-    await callback.message.answer("Выберите действие:", reply_markup=kb_budget.budget_menu_keyboard)
+    await callback.message.edit_text("Выберите действие:", reply_markup=kb_budget.budget_menu_keyboard)
 
 @router_menu_handler.callback_query(F.data == 'back_button')
 async def create_budget(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.delete()
-    await callback.message.answer("Выберите действие:", reply_markup=kb_budget.budget_menu_keyboard)
+    await callback.message.edit_text("Выберите действие:", reply_markup=kb_budget.budget_menu_keyboard)

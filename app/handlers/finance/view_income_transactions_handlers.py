@@ -33,10 +33,6 @@ async def create_income_transactions_keyboard(transactions: list):
         button_text = f"{date} - {amount}₽"  
         keyboard.add(InlineKeyboardButton(text=button_text, callback_data=f"transaction_{trans_id}"))  # Каждую кнопка добавляется на новую строку  
 
-    # Если количество категорий четное, мы можем добавить их по 2 в ряд, иначе по 1
-    if len(transactions) % 2 == 0:
-        keyboard.adjust(2)  # 2 кнопки в ряд
-    else:
         keyboard.adjust(1)  # 1 кнопка в ряд
     # Добавляем кнопку "Назад" и "Добавить транзакцию" в одной строке внизу  
     keyboard.row(  
@@ -143,13 +139,14 @@ async def add_income_transaction_handler(callback: CallbackQuery, state: FSMCont
 async def process_amount(message: Message, state: FSMContext):  
     user_data = await state.get_data()  
     category_id = user_data.get('category_id')  
+    await message.delete()
+    
 
     try:  
         amount = float(message.text)  
         await state.update_data(amount=amount)  
 
-        # Удаляем сообщение с запросом суммы  
-        await message.delete()  
+        # Удаляем сообщение с запросом суммы   
         bot_message_id = user_data.get('bot_message_id')  
 
         if bot_message_id is not None:  
@@ -165,6 +162,7 @@ async def process_amount(message: Message, state: FSMContext):
 
 @view_income_transactions_router.message(Form.waiting_for_description)  
 async def create_income_transaction_description(message: Message, state: FSMContext):  
+    await message.delete()
     user_data = await state.get_data()  
     amount = user_data.get('amount')  
     category_id = user_data.get('category_id')  

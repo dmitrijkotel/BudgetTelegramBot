@@ -15,9 +15,9 @@ class create_budget_states(StatesGroup):
 
 @create_budget_router.callback_query(F.data == 'create_budget_button')
 async def create_budget_handler(callback: CallbackQuery, state: FSMContext):
-    await callback.message.delete()
+    
     # Отправляем сообщение с просьбой ввести название бюджета и сохраняем идентификатор
-    bot_message = await callback.message.answer("Введите название для бюджета:", reply_markup=kb_menu.back_keyboard)
+    bot_message = await callback.message.edit_text("Введите название для бюджета:", reply_markup=kb_menu.back_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
     await state.set_state(create_budget_states.waiting_for_budget_title)
     await callback.answer()
@@ -50,10 +50,6 @@ async def create_budget_description(message: Message, state: FSMContext):
         description = message.text
         await state.update_data(description=description)  # Сохраняем описание
         await message.delete()  # Удаляем сообщение пользователя
-
-        # Удаляем сообщение бота, если есть
-        if bot_message_id is not None:
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_message_id)
 
         budget_name = user_data.get('budget_name')  # Получаем название бюджета
         telegram_id = message.from_user.id

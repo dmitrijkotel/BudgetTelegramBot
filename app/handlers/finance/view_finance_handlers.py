@@ -15,7 +15,7 @@ async def menu_budgets(callback):
     telegram_id = callback.from_user.id
 
     await callback.answer()
-    await callback.message.delete()
+    
 
     budgets = await get_budgets_from_db(telegram_id)
 
@@ -24,7 +24,7 @@ async def menu_budgets(callback):
 
     keyboard = await create_keyboard(budgets)
 
-    await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
+    await callback.message.edit_text("Выберите бюджет:", reply_markup=keyboard)
 
 @finance_budget_router.callback_query(F.data == 'finance_button')
 async def edit_budget_handler(callback: CallbackQuery):

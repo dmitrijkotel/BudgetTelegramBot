@@ -21,20 +21,3 @@ async def create_keyboard(budgets):
 
     keyboard.add(back)
     return keyboard.adjust(1).as_markup()  # Настраиваем клавиатуру на 2 кнопки в строке
-
-
-# Пример функции для отображения бюджета
-async def view_budget(message: types.Message, user_id):
-    budgets = await get_budgets_from_db(user_id)  # Получаем бюджеты из базы данных
-
-    back = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Назад', callback_data='back_button')],
-    ])
-
-    if not budgets:  # Проверяем, если нет доступных бюджетов
-        return await message.answer("Нет доступных бюджетов.", reply_markup=back)
-
-
-    keyboard = await create_keyboard(budgets)  # Создаем клавиатуру с бюджетами
-
-    await message.answer("Выберите бюджет:", reply_markup=keyboard)  # Отправляем сообщение с клавиатурой
