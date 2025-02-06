@@ -30,7 +30,7 @@ async def create_income_categories_keyboard(categories):
 
     # Добавить кнопки "Добавить категорию" и "Назад" в новую строку
     keyboard.row(
-        InlineKeyboardButton(text="Добавить категорию", callback_data="add_income_category_button"),
+        InlineKeyboardButton(text="Добавить", callback_data="add_income_category_button"),
         InlineKeyboardButton(text="Назад", callback_data="back_income_categories_button")
     )
 
@@ -42,9 +42,9 @@ async def view_income_categories(message: Message, budget_id: int):
     keyboard = await create_income_categories_keyboard(categories)
 
     if not categories:
-        await message.answer("Нет доступных категорий доходов.", reply_markup=keyboard)
+        await message.edit_text("Нет доступных категорий доходов.", reply_markup=keyboard)
     else:
-        await message.answer("Выберите категорию дохода:", reply_markup=keyboard)
+        await message.edit_text("Выберите категорию дохода:", reply_markup=keyboard)
 
 async def menu_budgets(callback):
     telegram_id = callback.from_user.id
@@ -73,7 +73,6 @@ async def view_income_categories_handler(callback: CallbackQuery, state: FSMCont
         await callback.answer("Ошибка: идентификатор бюджета не найден.")
         return
 
-    await callback.message.delete()
     await view_income_categories(callback.message, budget_id)
 
 async def get_category_details_db(category_id: int):

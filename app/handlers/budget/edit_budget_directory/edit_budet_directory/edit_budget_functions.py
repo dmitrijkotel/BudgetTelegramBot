@@ -25,10 +25,9 @@ async def process_edit_budget_name_function(message: Message, state: FSMContext,
 
 
 async def edit_description_budget_function(callback: CallbackQuery, state: FSMContext, budget_id, edit_budget_states):
-    await callback.message.delete()
 
     # Отправляем сообщение и сохраняем идентификатор сообщения
-    bot_message = await callback.message.answer("Введите описание для бюджета:", reply_markup=kb.back_complete_edit_name_keyboard)
+    bot_message = await callback.message.edit_text("Введите описание для бюджета:", reply_markup=kb.back_complete_edit_name_keyboard)
     await state.update_data(bot_message_id=bot_message.message_id)
 
     # Проверяем, что budget_id был установлен ранее
@@ -44,15 +43,18 @@ async def process_edit_budget_description_function(message: Message, state: FSMC
     await state.update_data(budget_name=budget_description)  # Сохраняем новое описание бюджета
     await message.delete()  # Удаляем сообщение пользователя
 
-    # Получаем идентификатор сообщения бота и удаляем его
+    # Получаем идентификатор сообщения бота и редактируем его
     user_data = await state.get_data()
     bot_message_id = user_data.get('bot_message_id')
-    await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_message_id)
 
     # Убедимся, что budget_id установлен перед вызовом функции обновления
     if budget_id is not None:
-        await set_new_budget_description(message, budget_description, budget_id)
+        await set_new_budget_description(message, budget_description, budget_id, bot_message_id)
     else:
-        await message.answer("Не удалось получить идентификатор бюджета. Обновление невозможно.",
-                             reply_markup=kb.back_complete_edit_description_keyboard)
+        await message.bot.edit_message_text(
+            chat_id=message.chat.id,
+            message_id=bot_message_id,
+            text="Не удалось получить идентификатор бюджета. Обновление невозможно.",
+            reply_markup=kb.back_complete_edit_description_keyboard
+        )
     await state.clear()  # Очистка состояния

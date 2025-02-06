@@ -4,6 +4,7 @@ from aiogram import Router, F, types
 from aiogram.types import CallbackQuery
 from aiogram.utils.callback_answer import CallbackAnswer
 
+from app.handlers.budget.edit_budget_directory.view_budget_handlers import menu_budgets
 import app.handlers.budget.keyboards.budget_menu_keyboard as kb_budget
 from app.handlers.budget.database.viewBudget import get_budgets_from_db, create_keyboard
 
@@ -30,16 +31,4 @@ async def create_budget(callback: CallbackQuery):
 
 @router_actions_budget_keyboard.callback_query(F.data == 'back_button_complete_delete')
 async def create_budget(callback: CallbackQuery):
-    telegram_id = callback.from_user.id
-
-    await callback.answer()
-    await callback.message.delete()
-
-    budgets = await get_budgets_from_db(telegram_id)
-
-    if not budgets:
-        return await callback.message.answer("Нет доступных бюджетов.", reply_markup=back_menu)
-
-    keyboard = await create_keyboard(budgets)
-
-    await callback.message.answer("Выберите бюджет:", reply_markup=keyboard)
+    await menu_budgets(callback)

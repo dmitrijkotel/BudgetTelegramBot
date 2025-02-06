@@ -37,7 +37,7 @@ async def create_income_transactions_keyboard(transactions: list):
     # Добавляем кнопку "Назад" и "Добавить транзакцию" в одной строке внизу  
     keyboard.row(  
         InlineKeyboardButton(text="Назад", callback_data="back_income_transactions_button"),  
-        InlineKeyboardButton(text="Добавить транзакцию", callback_data="add_income_transaction_button")  
+        InlineKeyboardButton(text="Добавить", callback_data="add_income_transaction_button")  
     )  
 
     return keyboard.as_markup()
@@ -47,9 +47,9 @@ async def view_income_transactions(message: Message, category_id: int, state: FS
     keyboard = await create_income_transactions_keyboard(transactions)  
 
     if not transactions:  
-        await message.answer("Нет транзакций в этой категории.", reply_markup=keyboard)  
+        await message.edit_text("Нет транзакций в этой категории.", reply_markup=keyboard)  
     else:  
-        await message.answer("Список транзакций доходов:", reply_markup=keyboard)  
+        await message.edit_text("Список транзакций доходов:", reply_markup=keyboard)  
 
 @view_income_transactions_router.callback_query(F.data == 'back_income_transactions_button')  
 async def back_to_categories_handler(callback: CallbackQuery, state: FSMContext):  
@@ -60,7 +60,7 @@ async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
     try:  
         category_id = int(callback.data.split('_')[1])  
         await state.update_data(category_id=category_id)  
-        await callback.message.delete()  
+         
         await view_income_transactions(callback.message, category_id, state)  
     except (ValueError, IndexError) as e:  
         await callback.answer("Ошибка загрузки транзакций")  
@@ -119,92 +119,106 @@ async def delete_transaction_handler(callback: CallbackQuery):
         print(f"Ошибка при удалении транзакции: {e}")  
     await callback.answer()
 
-@view_income_transactions_router.callback_query(F.data == 'add_income_transaction_button')  
-async def add_income_transaction_handler(callback: CallbackQuery, state: FSMContext):  
-        await callback.message.delete()  
+@view_income_transactions_router.callback_query(F.data == 'add_income_transaction_button')
+async def add_income_transaction_handler(callback: CallbackQuery, state: FSMContext):
 
-        user_data = await state.get_data()  
-        category_id = user_data.get('category_id')  
+    user_data = await state.get_data()
+    category_id = user_data.get('category_id')
 
-        if category_id is None:  
-            await callback.answer("Ошибка: идентификатор категории не найден.")  
-            return  
+    if category_id is None:
+        await callback.answer("Ошибка: идентификатор категории не найден.", show_alert=True)
+        return
 
-        bot_message = await callback.message.answer("Введите сумму транзакции:")  
-        await state.update_data(bot_message_id=bot_message.message_id, category_id=category_id)  
-        await state.set_state(Form.waiting_for_amount)  
-        await callback.answer()  
+    # Отправляем сообщение с запросом суммы и сохраняем его идентификатор
+    bot_message = await callback.message.edit_text("Введите сумму транзакции:")
+    await state.update_data(bot_message_id=bot_message.message_id, category_id=category_id)
+    await state.set_state(Form.waiting_for_amount)
+    await callback.answer()
 
-@view_income_transactions_router.message(Form.waiting_for_amount)  
-async def process_amount(message: Message, state: FSMContext):  
-    user_data = await state.get_data()  
-    category_id = user_data.get('category_id')  
-    await message.delete()
-    
+@view_income_transactions_router.message(Form.waiting_for_amount)
+async def process_amount(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    category_id = user_data.get('category_id')
+    await message.delete()  # Удаляем сообщение пользователя
 
-    try:  
-        amount = float(message.text)  
-        await state.update_data(amount=amount)  
+    try:
+        amount = float(message.text)
+        await state.update_data(amount=amount)
 
-        # Удаляем сообщение с запросом суммы   
-        bot_message_id = user_data.get('bot_message_id')  
+        # Редактируем сообщение бота с запросом суммы
+        bot_message_id = user_data.get('bot_message_id')
+        if bot_message_id is not None:
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=bot_message_id,
+                text="Введите описание транзакции:"
+            )
 
-        if bot_message_id is not None:  
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_message_id)  
+        await state.set_state(Form.waiting_for_description)
 
-        # Запрашиваем ввод описания транзакции  
-        bot_message = await message.answer("Введите описание транзакции:")  
-        await state.update_data(bot_message_id=bot_message.message_id)  
-        await state.set_state(Form.waiting_for_description)  
+    except ValueError:
+        # В случае ошибки редактируем сообщение бота
+        bot_message_id = user_data.get('bot_message_id')
+        if bot_message_id is not None:
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=bot_message_id,
+                text="Пожалуйста, введите корректную сумму."
+            )
 
-    except ValueError:  
-        await message.answer("Пожалуйста, введите корректную сумму.")  
+@view_income_transactions_router.message(Form.waiting_for_description)
+async def create_income_transaction_description(message: Message, state: FSMContext):
+    await message.delete()  # Удаляем сообщение пользователя
+    user_data = await state.get_data()
+    amount = user_data.get('amount')
+    category_id = user_data.get('category_id')
+    description = message.text or ''  # Если описание пустое, заменяем на пустую строку
+    transaction_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
-@view_income_transactions_router.message(Form.waiting_for_description)  
-async def create_income_transaction_description(message: Message, state: FSMContext):  
-    await message.delete()
-    user_data = await state.get_data()  
-    amount = user_data.get('amount')  
-    category_id = user_data.get('category_id')  
-    description = message.text or ''  # Если описание пустое, заменяем на пустую строку  
-    transaction_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")  
+    # Редактируем сообщение бота с запросом описания
+    bot_message_id = user_data.get('bot_message_id')
+    if bot_message_id is not None:
+        try:
+            async with aiosqlite.connect('tgBotDb.db') as conn:
+                await conn.execute(
+                    """INSERT INTO income (amount, description, category_id, date)
+                    VALUES (?, ?, ?, ?)""",
+                    (amount, description, category_id, transaction_date)
+                )
+                await conn.commit()
 
-    bot_message_id = user_data.get('bot_message_id')  
+                # Редактируем сообщение бота для отображения результата
+                await message.bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=bot_message_id,
+                    text="Транзакция выполнена успешно!",
+                    reply_markup=create_return_keyboard()
+                )
+        except Exception as e:
+            print(f"Ошибка при добавлении транзакции в БД: {e}")
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=bot_message_id,
+                text="Произошла ошибка при добавлении транзакции. Пожалуйста, попробуйте еще раз."
+            )
 
-    if bot_message_id is not None:  
-        await message.bot.delete_message(chat_id=message.chat.id, message_id=bot_message_id)  
+    await state.clear()  # Очищаем состояние после добавления транзакции
 
-    try:  
-        async with aiosqlite.connect('tgBotDb.db') as conn:  
-            await conn.execute(  
-                """INSERT INTO income (amount, description, category_id, date)   
-                VALUES (?, ?, ?, ?)""",  
-                (amount, description, category_id, transaction_date)  
-            )  
-            await conn.commit()  
-            await message.answer("Транзакция выполнена успешно!", reply_markup=create_return_keyboard())  
-    except Exception as e:  
-        print(f"Ошибка при добавлении транзакции в БД: {e}")  
-        await message.answer("Произошла ошибка при добавлении транзакции. Пожалуйста, попробуйте еще раз.")  
+def create_return_keyboard():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text="Вернуться", callback_data="return_to_budgets"))
+    return keyboard.as_markup()
 
-    await state.clear()  # Очищаем состояние после добавления транзакции  
+@view_income_transactions_router.callback_query(F.data == "return_to_budgets")
+async def return_to_budgets_handler(callback: CallbackQuery, state: FSMContext):
+    await menu_budgets(callback)  # Возвращаем в меню бюджетов
 
-def create_return_keyboard():  
-    keyboard = InlineKeyboardBuilder()  
-    keyboard.add(InlineKeyboardButton(text="Вернуться", callback_data="return_to_budgets"))  
-    return keyboard.as_markup()  
+@view_income_transactions_router.callback_query(F.data == 'back_from_transaction_detail')
+async def back_to_transactions_handler(callback: CallbackQuery, state: FSMContext):
+    user_data = await state.get_data()
+    category_id = user_data.get('category_id')
 
-@view_income_transactions_router.callback_query(F.data == "return_to_budgets")  
-async def return_to_budgets_handler(callback: CallbackQuery, state: FSMContext):  
-    await menu_budgets(callback)  # Возвращаем в меню бюджетов  
-
-@view_income_transactions_router.callback_query(F.data == 'back_from_transaction_detail')  
-async def back_to_transactions_handler(callback: CallbackQuery, state: FSMContext):  
-    user_data = await state.get_data()  
-    category_id = user_data.get('category_id')  
-
-    if category_id is not None:  
-        await callback.message.delete()  
-        await view_income_transactions(callback.message, category_id, state)  
-    else:  
-        await callback.answer("Ошибка: идентификатор категории не найден.")
+    if category_id is not None:
+        await view_income_transactions(callback.message, category_id, state)
+    else:
+        await callback.answer("Ошибка: идентификатор категории не найден.", show_alert=True)
