@@ -13,6 +13,7 @@ from config import TOKEN
 from app.handlers.main.database.create_table_db import create_tables_db
 from app.handlers.main.registration_handler import registration_router
 from app.handlers.finance.view_income_categories import view_income_category_router
+from app.handlers.finance.view_income_transactions_handlers import view_income_transactions_router
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -24,8 +25,9 @@ async def main():
     dp.include_router(router_actions_budget_keyboard)
     dp.include_router(finance_budget_router)
     dp.include_router(registration_router)
-    dp.include_router(view_income_category_router)
     dp.include_router(create_income_category_router) 
+    dp.include_router(view_income_category_router)
+    dp.include_router(view_income_transactions_router)
 
     await dp.start_polling(bot)
 

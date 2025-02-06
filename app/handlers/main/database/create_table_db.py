@@ -40,7 +40,6 @@ def create_tables_db():
     cursor.execute("""  
     CREATE TABLE IF NOT EXISTS expenses (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
-        budget_id INTEGER NOT NULL,  
         category_id INTEGER NOT NULL,  
         amount REAL NOT NULL,  
         date TEXT NOT NULL,  
@@ -54,8 +53,7 @@ def create_tables_db():
     cursor.execute("""  
     CREATE TABLE IF NOT EXISTS income (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
-        budget_id INTEGER NOT NULL,  
-        category_id INTEGER NOT NULL,  
+        category_id INTEGER NOT NULL,    
         amount REAL NOT NULL,  
         date TEXT NOT NULL,  
         description TEXT,  
