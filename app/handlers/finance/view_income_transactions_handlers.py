@@ -55,10 +55,10 @@ async def view_income_transactions(message: Message, category_id: int, state: FS
 async def back_to_categories_handler(callback: CallbackQuery, state: FSMContext):  
     await menu_budgets(callback)   
 
-@view_income_transactions_router.callback_query(F.data.startswith('category_'))  
+@view_income_transactions_router.callback_query(F.data.startswith('category_income_'))  
 async def handle_category_selection(callback: CallbackQuery, state: FSMContext):  
     try:  
-        category_id = int(callback.data.split('_')[1])  
+        category_id = int(callback.data.split('_')[2])  
         await state.update_data(category_id=category_id)  
          
         await view_income_transactions(callback.message, category_id, state)  
