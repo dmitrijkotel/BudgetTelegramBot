@@ -1,7 +1,8 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 actions_budget_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Финансы', callback_data='finance_button')],
+    [InlineKeyboardButton(text='Расходы', callback_data='expenses_budget_button'),
+    InlineKeyboardButton(text='Доходы', callback_data='income_budget_button')],
 
     [InlineKeyboardButton(text='Удалить', callback_data='delete_budget_button'),
     InlineKeyboardButton(text='Изменить', callback_data='edit_budget_button')],

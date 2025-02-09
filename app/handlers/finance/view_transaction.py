@@ -37,7 +37,7 @@ async def get_transactions_from_db(category_id: int, transaction_type: str):
             return await cursor.fetchall()
 
 # Функция для создания клавиатуры с транзакциями
-async def create_transactions_keyboard(transactions: list, back_button_callback: str, add_button_callback: str):
+async def create_transactions_keyboard(transactions: list, back_button_callback: str, add_button_callback: str, delete_button_callback: str):
     keyboard = InlineKeyboardBuilder()
 
     for transaction in transactions:
@@ -48,7 +48,8 @@ async def create_transactions_keyboard(transactions: list, back_button_callback:
     keyboard.adjust(1)
     keyboard.row(
         InlineKeyboardButton(text="Назад", callback_data=back_button_callback),
-        InlineKeyboardButton(text="Добавить", callback_data=add_button_callback)
+        InlineKeyboardButton(text="Добавить", callback_data=add_button_callback),
+        InlineKeyboardButton(text="Удалить", callback_data=delete_button_callback)
     )
 
     return keyboard.as_markup()
@@ -59,7 +60,8 @@ async def view_transactions(message: Message, category_id: int, transaction_type
     keyboard = await create_transactions_keyboard(
         transactions,
         back_button_callback=f"back_{transaction_type}_transactions_button",
-        add_button_callback=f"add_{transaction_type}_transaction_button"
+        add_button_callback=f"add_{transaction_type}_transaction_button",
+        delete_button_callback=f"delete_{transaction_type}_category_button_{category_id}"
     )
 
     if not transactions:
@@ -138,6 +140,27 @@ async def delete_transaction_handler(callback: CallbackQuery):
     except (ValueError, IndexError, aiosqlite.Error) as e:
         await callback.answer("Ошибка: не удалось удалить транзакцию.")
         logger.error(f"Ошибка при удалении транзакции: {e}")
+    await callback.answer()
+
+# Обработчик удаления категории
+@view_transactions_router.callback_query(F.data.startswith('delete_'))
+async def delete_category_handler(callback: CallbackQuery):
+    try:
+        data_parts = callback.data.split('_')
+        transaction_type = data_parts[1]  # 'expense' или 'income'
+        category_id = int(data_parts[4])
+
+        async with aiosqlite.connect('tgBotDb.db') as conn:
+            # Удаляем все транзакции в этой категории
+            await conn.execute("DELETE FROM transactions WHERE category_id = ? AND type = ?", (category_id, transaction_type))
+            # Удаляем саму категорию
+            await conn.execute("DELETE FROM categories WHERE id = ?", (category_id,))
+            await conn.commit()
+
+        await callback.message.edit_text(f"Категория и все связанные транзакции успешно удалены.", reply_markup=create_return_keyboard())
+    except (ValueError, IndexError, aiosqlite.Error) as e:
+        await callback.answer("Ошибка: не удалось удалить категорию.")
+        logger.error(f"Ошибка при удалении категории: {e}")
     await callback.answer()
 
 # Обработчик добавления транзакции
