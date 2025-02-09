@@ -16,6 +16,7 @@ from app.handlers.finance.view_income_categories import view_income_category_rou
 from app.handlers.finance.view_expenses_category import view_expenses_category_router
 from app.handlers.finance.add_expenses_categories import create_expenses_category_router
 from app.handlers.finance.view_transaction import view_transactions_router
+from app.handlers.budget.createReport import create_report_router
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -32,6 +33,7 @@ async def main():
     dp.include_router(view_expenses_category_router)
     dp.include_router(create_expenses_category_router)
     dp.include_router(view_transactions_router)
+    dp.include_router(create_report_router)
 
     await dp.start_polling(bot)
 
