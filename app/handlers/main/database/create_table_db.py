@@ -24,24 +24,25 @@ def create_tables_db():
     );  
     """)
 
+    # Создание таблицы категорий
     cursor.execute("""  
-        CREATE TABLE IF NOT EXISTS categories (  
-            id INTEGER PRIMARY KEY AUTOINCREMENT,  
-            budget_id INTEGER NOT NULL,  
-            name TEXT NOT NULL,  
-            description TEXT,
-            type TEXT NOT NULL CHECK (type IN ('income', 'expense')),  
-            limit_amount CHECK (limit_amount >= 0),  -- Ограничение по деньгам, неотрицательное значение  
-            FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE  
-        );  
+    CREATE TABLE IF NOT EXISTS categories (  
+        id INTEGER PRIMARY KEY AUTOINCREMENT,  
+        budget_id INTEGER NOT NULL,  
+        name TEXT NOT NULL,  
+        description TEXT,
+        type TEXT NOT NULL CHECK (type IN ('income', 'expense')),  
+        FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE  
+    );  
     """)
 
-    # Создание таблицы расходов
+    # Создание таблицы транзакций (объединенная для доходов и расходов)
     cursor.execute("""  
-    CREATE TABLE IF NOT EXISTS expenses (  
+    CREATE TABLE IF NOT EXISTS transactions (  
         id INTEGER PRIMARY KEY AUTOINCREMENT,  
         category_id INTEGER NOT NULL,  
-        amount REAL NOT NULL,  
+        amount REAL NOT NULL CHECK (amount >= 0),  
+        type TEXT NOT NULL CHECK (type IN ('income', 'expense')),  
         date TEXT NOT NULL,  
         description TEXT,  
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
@@ -49,19 +50,14 @@ def create_tables_db():
     );  
     """)
 
-    # Создание таблицы доходов
-    cursor.execute("""  
-    CREATE TABLE IF NOT EXISTS income (  
-        id INTEGER PRIMARY KEY AUTOINCREMENT,  
-        category_id INTEGER NOT NULL,    
-        amount REAL NOT NULL,  
-        date TEXT NOT NULL,  
-        description TEXT,  
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE  
-    );  
-    """)
+    # Создание индексов для ускорения запросов
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_categories_budget_id ON categories(budget_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_budgets_user_id ON budgets(user_id);")
 
     # Сохраняем изменения и закрываем соединение
     db.commit()
     db.close()
+
+# Вызов функции для создания таблиц
+create_tables_db()

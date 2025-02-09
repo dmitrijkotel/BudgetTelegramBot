@@ -13,9 +13,9 @@ from config import TOKEN
 from app.handlers.main.database.create_table_db import create_tables_db
 from app.handlers.main.registration_handler import registration_router
 from app.handlers.finance.view_income_categories import view_income_category_router
-from app.handlers.finance.view_income_transactions_handlers import view_income_transactions_router
 from app.handlers.finance.view_expenses_category import view_expenses_category_router
 from app.handlers.finance.add_expenses_categories import create_expenses_category_router
+from app.handlers.finance.view_transaction import view_transactions_router
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -29,9 +29,9 @@ async def main():
     dp.include_router(registration_router)
     dp.include_router(create_income_category_router) 
     dp.include_router(view_income_category_router)
-    dp.include_router(view_income_transactions_router)
     dp.include_router(view_expenses_category_router)
     dp.include_router(create_expenses_category_router)
+    dp.include_router(view_transactions_router)
 
     await dp.start_polling(bot)
 
