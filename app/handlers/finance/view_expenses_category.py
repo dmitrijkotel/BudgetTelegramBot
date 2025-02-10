@@ -17,13 +17,29 @@ async def get_expenses_categories_from_db(budget_id: int):
             (budget_id, 'expense')
         ) as cursor:
             return await cursor.fetchall()
+        
+async def get_transactions_sum_by_category(category_id: int):
+    async with aiosqlite.connect('tgBotDb.db') as conn:
+        async with conn.execute(
+            "SELECT SUM(amount) FROM transactions WHERE category_id = ?",
+            (category_id,)
+        ) as cursor:
+            result = await cursor.fetchone()
+            return result[0] if result[0] is not None else 0
 
 async def create_expenses_categories_keyboard(categories):
     keyboard = InlineKeyboardBuilder()
 
     # Создаем кнопки для каждой категории
     for category_id, category_name in categories:
-        button = InlineKeyboardButton(text=category_name, callback_data=f"category_expense_{category_id}")
+        # Получаем сумму транзакций для категории
+        transactions_sum = await get_transactions_sum_by_category(category_id)
+        
+        # Формируем текст кнопки с названием категории и суммой транзакций
+        button_text = f"{category_name} ({transactions_sum}₽)"
+        
+        # Создаем кнопку
+        button = InlineKeyboardButton(text=button_text, callback_data=f"category_income_{category_id}")
         keyboard.add(button)
         
         keyboard.adjust(1)  # 1 кнопка в ряд
