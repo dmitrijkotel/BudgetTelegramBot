@@ -6,7 +6,6 @@ from aiogram.types import CallbackQuery
 import app.handlers.finance.keyboards.finance_budget_keyboard as kb
 from app.handlers.budget.database.viewBudget import get_budgets_from_db, create_keyboard
 import app.handlers.budget.edit_budget_directory.action_budget_directory.actions_budget_keyboards as actions_kb
-from app.handlers.budget.edit_budget_directory.view_budget_handlers import budget_id
 
 finance_budget_router = Router()
 
@@ -14,7 +13,6 @@ async def menu_budgets(callback):
     telegram_id = callback.from_user.id
 
     await callback.answer()
-    
 
     budgets = await get_budgets_from_db(telegram_id)
 
@@ -26,7 +24,10 @@ async def menu_budgets(callback):
     await callback.message.edit_text("Выберите бюджет:", reply_markup=keyboard)
 
 @finance_budget_router.callback_query(F.data == 'finance_button')
-async def edit_budget_handler(callback: CallbackQuery):
+async def edit_budget_handler(callback: CallbackQuery, state: FSMContext):
+    user_data = await state.get_data()
+    budget_id = user_data.get('budget_id')
+    
     await callback.answer()
 
     print(

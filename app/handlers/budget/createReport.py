@@ -12,7 +12,7 @@ class set_report_date(StatesGroup):
     waiting_for_report_date_start = State()
     waiting_for_report_date_end = State()
 
-@create_report_router.callback_query(F.data == 'report_budget_button')
+@create_report_router.callback_query(F.data == '')
 async def create_budget_handler(callback: CallbackQuery, state: FSMContext):
     # Отправляем сообщение с просьбой ввести название бюджета и сохраняем идентификатор
     bot_message = await callback.message.edit_text("Введите дату начала отчёта для бюджета:", reply_markup=kb_menu.back_keyboard)
